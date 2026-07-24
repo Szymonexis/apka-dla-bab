@@ -34,6 +34,28 @@ services:
       timeout: 3s
       retries: 20
 
+  # Self-hostowany serwer powiadomień push (open source, bez opłat).
+  # Telefon subskrybuje swój sekretny temat w aplikacji ntfy (F-Droid/Google Play),
+  # a nasz backend publikuje na niego przypomnienia i poranne podsumowania.
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    restart: unless-stopped
+    command: serve
+    environment:
+      NTFY_BASE_URL: ${NTFY_PUBLIC_URL:-http://localhost:8090}
+      NTFY_CACHE_FILE: /var/cache/ntfy/cache.db
+      # push dociera także do telefonów bez usług Google
+      NTFY_UPSTREAM_BASE_URL: ""
+    ports:
+      - "8090:80"
+    volumes:
+      - ntfydata:/var/cache/ntfy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --tries=1 -O - http://localhost:80/v1/health | grep -o '\"healthy\":true'"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
   backend:
     build: ./backend
     restart: unless-stopped
@@ -42,6 +64,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      ntfy:
+        condition: service_started
     environment:
       PORT: "8080"
       DATABASE_URL: postgres://${POSTGRES_USER:-baba}:${POSTGRES_PASSWORD:-baba}@postgres:5432/${POSTGRES_DB:-apka}?sslmode=disable
@@ -51,9 +75,13 @@ services:
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
       MINIO_BUCKET: ${MINIO_BUCKET:-apka-files}
       MINIO_USE_SSL: "false"
+      NTFY_URL: http://ntfy:80
+      NTFY_PUBLIC_URL: ${NTFY_PUBLIC_URL:-http://localhost:8090}
+      TIMEZONE: ${TIMEZONE:-Europe/Warsaw}
     ports:
       - "8080:8080"
 
 volumes:
   pgdata:
   miniodata:
+  ntfydata:

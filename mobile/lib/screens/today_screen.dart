@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../api/api_client.dart';
 import '../dialogs.dart';
 import '../models/models.dart';
+import '../notifications_service.dart';
 import '../util.dart';
 import '../widgets/common.dart';
 import 'reminders_screen.dart';
@@ -46,9 +47,13 @@ class _TodayScreenState extends State<TodayScreen> {
       ]);
       if (!mounted) return;
       final today = todayStr();
+      final allReminders = (results[0] as List)
+          .map((e) => Reminder.fromJson(e as Map<String, dynamic>))
+          .toList();
+      // lokalne alarmy zawsze odpowiadają pełnej liście aktywnych przypomnień
+      NotificationsService.i.syncReminders(allReminders);
       setState(() {
-        _reminders = (results[0] as List)
-            .map((e) => Reminder.fromJson(e as Map<String, dynamic>))
+        _reminders = allReminders
             .where((r) => r.remindAt.isBefore(end.add(const Duration(days: 2))))
             .toList();
         _tasks = (results[1] as List)

@@ -78,8 +78,11 @@ func (a *API) updateReminder(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	// notified_at wraca na NULL - po zmianie terminu przypomnienie ma
+	// zadzwonić ponownie o nowej porze
 	tag, err := a.db.Exec(r.Context(),
-		`UPDATE reminders SET title = $1, remind_at = $2 WHERE id = $3 AND user_id = $4`,
+		`UPDATE reminders SET title = $1, remind_at = $2, notified_at = NULL
+		 WHERE id = $3 AND user_id = $4`,
 		in.Title, in.RemindAt, id, userID(r))
 	if err != nil {
 		internalErr(w, err)

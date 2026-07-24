@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../api/api_client.dart';
 import '../dialogs.dart';
 import '../models/models.dart';
+import '../notifications_service.dart';
 import '../util.dart';
 import '../widgets/common.dart';
 
@@ -27,8 +28,11 @@ class _RemindersScreenState extends State<RemindersScreen> {
     try {
       final res = await Api.i.get('/api/reminders', query: {'includeDone': 'true'});
       if (!mounted) return;
+      final reminders =
+          (res as List).map((e) => Reminder.fromJson(e as Map<String, dynamic>)).toList();
+      NotificationsService.i.syncReminders(reminders);
       setState(() {
-        _reminders = (res as List).map((e) => Reminder.fromJson(e as Map<String, dynamic>)).toList();
+        _reminders = reminders;
         _loading = false;
       });
     } catch (e) {

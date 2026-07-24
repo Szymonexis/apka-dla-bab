@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../api/api_client.dart';
 import '../widgets/common.dart';
@@ -14,10 +15,35 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late final TextEditingController _url;
 
+  // ustawienia push (ntfy) - ładowane tylko po zalogowaniu
+  bool _pushLoaded = false;
+  bool _pushEnabled = false;
+  String _pushServer = '';
+  String _pushTopic = '';
+  int _digestHour = 8;
+
   @override
   void initState() {
     super.initState();
     _url = TextEditingController(text: Api.i.baseUrl);
+    if (Api.i.isLoggedIn) _loadPush();
+  }
+
+  Future<void> _loadPush() async {
+    try {
+      final res = await Api.i.get('/api/push/settings');
+      if (!mounted) return;
+      final map = res as Map<String, dynamic>;
+      setState(() {
+        _pushLoaded = true;
+        _pushEnabled = (map['enabled'] ?? false) as bool;
+        _pushServer = (map['serverUrl'] ?? '') as String;
+        _pushTopic = (map['topic'] ?? '') as String;
+        _digestHour = (map['digestHour'] ?? 8) as int;
+      });
+    } catch (_) {
+      // sekcja push po prostu się nie pokaże
+    }
   }
 
   Future<void> _saveUrl() async {
@@ -38,6 +64,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _setDigestHour(int hour) async {
+    try {
+      await Api.i.put('/api/push/settings', body: {'digestHour': hour});
+      setState(() => _digestHour = hour);
+    } catch (e) {
+      if (mounted) showError(context, e);
+    }
+  }
+
+  Future<void> _testPush() async {
+    try {
+      await Api.i.post('/api/push/test');
+      if (mounted) showInfo(context, 'Wysłane! Sprawdź powiadomienie z ntfy 🎉');
+    } catch (e) {
+      if (mounted) showError(context, e);
+    }
+  }
+
+  Future<void> _regenerateTopic() async {
+    final sure = await confirmDelete(context,
+        'Stary temat przestanie działać - trzeba będzie zmienić subskrypcję w aplikacji ntfy.');
+    if (!sure) return;
+    try {
+      final res = await Api.i.post('/api/push/regenerate');
+      if (!mounted) return;
+      setState(() => _pushTopic = ((res as Map<String, dynamic>)['topic'] ?? '') as String);
+      showInfo(context, 'Wygenerowano nowy temat');
+    } catch (e) {
+      if (mounted) showError(context, e);
+    }
+  }
+
+  Future<void> _copy(String label, String value) async {
+    await Clipboard.setData(ClipboardData(text: value));
+    if (mounted) showInfo(context, 'Skopiowano $label');
+  }
+
   Future<void> _logout() async {
     await Api.i.logout();
     if (!mounted) return;
@@ -54,6 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const SectionHeader('🌐 Serwer'),
           TextField(
             controller: _url,
             keyboardType: TextInputType.url,
@@ -78,7 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               FilledButton(onPressed: _saveUrl, child: const Text('Zapisz')),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           const Card(
             child: Padding(
               padding: EdgeInsets.all(14),
@@ -91,8 +155,109 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 24),
           if (Api.i.isLoggedIn) ...[
+            const SectionHeader('🔔 Powiadomienia'),
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(14),
+                child: Text(
+                  'Przypomnienia dzwonią na tym telefonie automatycznie '
+                  '(lokalne alarmy - działają bez internetu). Poniższy push przez '
+                  'Twój własny serwer ntfy to opcjonalny dodatek: dociera nawet '
+                  'wtedy, gdy Ogarniaczka jest zamknięta, i na inne urządzenia.',
+                  style: TextStyle(fontSize: 13),
+                ),
+              ),
+            ),
+            if (_pushLoaded && !_pushEnabled)
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(14),
+                  child: Text(
+                    'Serwer push (ntfy) nie jest skonfigurowany na backendzie.\n'
+                    'Uruchom kontener ntfy z docker-compose i ustaw NTFY_URL.',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                ),
+              ),
+            if (_pushLoaded && _pushEnabled) ...[
+              Card(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.dns_outlined),
+                      title: const Text('Serwer ntfy'),
+                      subtitle: Text(_pushServer),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.copy, size: 20),
+                        onPressed: () => _copy('adres serwera', _pushServer),
+                      ),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.key_outlined),
+                      title: const Text('Twój sekretny temat'),
+                      subtitle: Text(_pushTopic, style: const TextStyle(fontSize: 12)),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.copy, size: 20),
+                        onPressed: () => _copy('temat', _pushTopic),
+                      ),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.wb_sunny_outlined),
+                      title: const Text('Poranne podsumowanie obowiązków'),
+                      trailing: DropdownButton<int>(
+                        value: _digestHour,
+                        items: [
+                          const DropdownMenuItem(value: -1, child: Text('wyłączone')),
+                          for (var h = 5; h <= 12; h++)
+                            DropdownMenuItem(value: h, child: Text('$h:00')),
+                        ],
+                        onChanged: (v) {
+                          if (v != null) _setDigestHour(v);
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _testPush,
+                              icon: const Icon(Icons.send_outlined, size: 18),
+                              label: const Text('Wyślij testowe'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _regenerateTopic,
+                              icon: const Icon(Icons.autorenew, size: 18),
+                              label: const Text('Nowy temat'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(14),
+                  child: Text(
+                    'Jak włączyć push na telefonie 📲\n\n'
+                    '1. Zainstaluj darmową aplikację "ntfy" (Google Play lub F-Droid).\n'
+                    '2. W ntfy: Dodaj subskrypcję → wpisz temat skopiowany powyżej.\n'
+                    '3. W "Użyj innego serwera" podaj adres serwera ntfy z tej strony.\n'
+                    '4. Kliknij "Wyślij testowe" i sprawdź, czy przyszło. 🎉\n\n'
+                    'Temat traktuj jak hasło - kto go zna, może czytać Twoje powiadomienia.',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                ),
+              ),
+            ],
+            const SectionHeader('👤 Konto'),
             ListTile(
               leading: const Icon(Icons.person_outline),
               title: Text(Api.i.displayName.isEmpty ? 'Zalogowano' : Api.i.displayName),
@@ -104,6 +269,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: const Icon(Icons.logout),
               label: const Text('Wyloguj się'),
             ),
+            const SizedBox(height: 24),
           ],
         ],
       ),
