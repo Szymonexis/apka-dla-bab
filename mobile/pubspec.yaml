@@ -1,0 +1,24 @@
+name: ogarniaczka
+description: Domowy organizer - notatki, plan tygodnia, obowiazki, przepisy, dzienniczek i budzet w jednej apce.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  # "any", bo flutter_localizations przypina konkretna wersje intl zalezna od wersji Fluttera
+  intl: any
+  http: ^1.2.0
+  shared_preferences: ^2.2.3
+  image_picker: ^1.1.2
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

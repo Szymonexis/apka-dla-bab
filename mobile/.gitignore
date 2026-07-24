@@ -1,0 +1,10 @@
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+pubspec.lock
+
+# Wygenerowane katalogi platform commituj świadomie (flutter create)
+# android/ i ios/ NIE są ignorowane celowo.

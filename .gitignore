@@ -1,0 +1,19 @@
+# Sekrety / lokalna konfiguracja
+.env
+
+# Go
+backend/server
+backend/bin/
+
+# Flutter / Dart
+mobile/.dart_tool/
+mobile/.packages
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/pubspec.lock
+
+# IDE
+.idea/
+.vscode/
+*.iml
