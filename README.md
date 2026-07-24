@@ -128,17 +128,18 @@ Backend sam czeka na bazę, wykonuje migracje i zakłada bucket w MinIO.
 
 ### 2. Aplikacja mobilna (Android)
 
-Wymagany [Flutter SDK](https://docs.flutter.dev/get-started/install). Szczegóły w [`mobile/README.md`](mobile/README.md), w skrócie:
+Wymagany [Flutter SDK](https://docs.flutter.dev/get-started/install). Katalog
+`android/` (manifest z uprawnieniami, gradle z desugaringiem, ikony) jest już
+w repo - nic nie trzeba generować ani edytować:
 
 ```bash
 cd mobile
-flutter create --project-name ogarniaczka --org pl.apka --platforms android .
-# dev po HTTP: dodaj android:usesCleartextTraffic="true" do <application> w
-# android/app/src/main/AndroidManifest.xml
-# lokalne alarmy przypomnień: włącz desugaring i dodaj odbiorniki w manifeście
-# (gotowe snippety w mobile/README.md)
+flutter pub get
 flutter run
 ```
+
+Szczegóły (co jest skonfigurowane, podpisywanie release, iOS) w
+[`mobile/README.md`](mobile/README.md).
 
 Adres serwera ustawisz w apce (ikona ⚙️, dostępna też przed zalogowaniem):
 - emulator Androida: `http://10.0.2.2:8080` (domyślny),

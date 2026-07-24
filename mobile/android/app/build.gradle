@@ -1,0 +1,47 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // Wtyczka Fluttera musi być po wtyczkach Androida i Kotlina.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "pl.apka.ogarniaczka"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+        // Wymagane przez flutter_local_notifications (java.time na starszych Androidach).
+        coreLibraryDesugaringEnabled = true
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    defaultConfig {
+        applicationId = "pl.apka.ogarniaczka"
+        minSdkVersion flutter.minSdkVersion
+        targetSdkVersion flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
+
+    buildTypes {
+        release {
+            // Na razie podpisujemy kluczem debug, żeby `flutter run --release` działało.
+            // Przed publikacją skonfiguruj własny klucz (key.properties).
+            signingConfig = signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.4"
+}

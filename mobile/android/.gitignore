@@ -1,0 +1,12 @@
+gradle-wrapper.jar.lock
+/.gradle
+/captures/
+/gradlew.lock
+/local.properties
+GeneratedPluginRegistrant.java
+.cxx/
+
+# Klucze podpisywania release - nigdy do repo
+key.properties
+**/*.keystore
+**/*.jks
