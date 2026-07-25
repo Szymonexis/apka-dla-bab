@@ -108,6 +108,9 @@ Komunikaty błędów API są po polsku - aplikacja pokazuje je wprost użytkowni
 
 ## Jak uruchomić
 
+> 🧊 **Nix**: `nix-shell` w katalogu głównym wrzuca Cię do zsh z Go, Flutterem,
+> psql i mc na pokładzie (patrz `shell.nix`).
+
 ### 1. Backend (Docker)
 
 ```bash

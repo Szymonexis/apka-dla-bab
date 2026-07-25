@@ -1,6 +1,9 @@
 # Sekrety / lokalna konfiguracja
 .env
 
+# nix-shell (generowane przez shellHook w shell.nix)
+.zshrc.d/
+
 # Go
 backend/server
 backend/bin/
