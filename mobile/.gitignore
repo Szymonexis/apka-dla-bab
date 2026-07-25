@@ -6,5 +6,5 @@ build/
 .metadata
 pubspec.lock
 
-# Wygenerowane katalogi platform commituj świadomie (flutter create)
-# android/ i ios/ NIE są ignorowane celowo.
+# android/ jest wersjonowany w całości (manifest, gradle, ikony).
+# Pliki lokalne (local.properties, .gradle) wyklucza android/.gitignore.

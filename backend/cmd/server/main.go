@@ -12,6 +12,7 @@ import (
 	"github.com/szymonexis/apka-dla-bab/backend/internal/config"
 	"github.com/szymonexis/apka-dla-bab/backend/internal/database"
 	"github.com/szymonexis/apka-dla-bab/backend/internal/httpapi"
+	"github.com/szymonexis/apka-dla-bab/backend/internal/notify"
 	"github.com/szymonexis/apka-dla-bab/backend/internal/storage"
 )
 
@@ -36,7 +37,10 @@ func main() {
 		log.Fatalf("minio: %v", err)
 	}
 
-	api := httpapi.New(pool, store, cfg)
+	notifier := notify.New(pool, cfg.NtfyURL, cfg.Timezone, cfg.DispatchInterval)
+	go notifier.Run(ctx)
+
+	api := httpapi.New(pool, store, cfg, notifier)
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
 		Handler:           api.Router(),

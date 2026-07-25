@@ -9,18 +9,20 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/szymonexis/apka-dla-bab/backend/internal/config"
+	"github.com/szymonexis/apka-dla-bab/backend/internal/notify"
 	"github.com/szymonexis/apka-dla-bab/backend/internal/storage"
 )
 
 // API trzyma zależności współdzielone przez wszystkie handlery.
 type API struct {
-	db    *pgxpool.Pool
-	store *storage.Storage
-	cfg   config.Config
+	db       *pgxpool.Pool
+	store    *storage.Storage
+	cfg      config.Config
+	notifier *notify.Notifier
 }
 
-func New(db *pgxpool.Pool, store *storage.Storage, cfg config.Config) *API {
-	return &API{db: db, store: store, cfg: cfg}
+func New(db *pgxpool.Pool, store *storage.Storage, cfg config.Config, notifier *notify.Notifier) *API {
+	return &API{db: db, store: store, cfg: cfg, notifier: notifier}
 }
 
 func (a *API) Router() http.Handler {
@@ -107,6 +109,13 @@ func (a *API) Router() http.Handler {
 				r.Post("/", a.createTransaction)
 				r.Put("/{id}", a.updateTransaction)
 				r.Delete("/{id}", a.deleteTransaction)
+			})
+
+			r.Route("/push", func(r chi.Router) {
+				r.Get("/settings", a.getPushSettings)
+				r.Put("/settings", a.updatePushSettings)
+				r.Post("/regenerate", a.regeneratePushTopic)
+				r.Post("/test", a.testPush)
 			})
 
 			r.Post("/files", a.uploadFile)

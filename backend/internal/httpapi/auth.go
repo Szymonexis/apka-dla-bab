@@ -11,6 +11,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/szymonexis/apka-dla-bab/backend/internal/notify"
 )
 
 type userResponse struct {
@@ -76,6 +78,14 @@ func (a *API) register(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, http.StatusConflict, "Ten adres e-mail jest już zarejestrowany")
 			return
 		}
+		internalErr(w, err)
+		return
+	}
+
+	// od razu zakładamy ustawienia push z sekretnym tematem ntfy
+	if _, err := a.db.Exec(r.Context(),
+		`INSERT INTO push_settings (user_id, ntfy_topic) VALUES ($1, $2)
+		 ON CONFLICT (user_id) DO NOTHING`, id, notify.RandomTopic()); err != nil {
 		internalErr(w, err)
 		return
 	}

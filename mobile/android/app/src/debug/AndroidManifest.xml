@@ -1,0 +1,4 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- hot reload / debugowanie wymaga dostępu do sieci -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+</manifest>
