@@ -1,94 +1,101 @@
-# Ogarniaczka - aplikacja mobilna (Flutter)
+# Ogarniaczka - aplikacja mobilna (Expo / React Native)
 
-Aplikacja Android-first (Flutter, Material 3, po polsku). Katalog `android/`
-jest **w całości w repo** - skonfigurowany manifest, gradle z desugaringiem,
-ikony i motywy. Niczego nie trzeba generować ani edytować ręcznie.
+Aplikacja Android-first napisana w **TypeScript** na **Expo SDK 54** z routingiem
+plikowym (**expo-router**). Cała konfiguracja natywna żyje w `app.json` -
+katalogi `android/`/`ios/` generuje prebuild, niczego nie edytuje się ręcznie.
 
-## Pierwsze uruchomienie
+## Szybki start (Expo Go - bez Android SDK)
 
-1. Zainstaluj [Flutter SDK](https://docs.flutter.dev/get-started/install)
-   i Android Studio (SDK + emulator albo telefon po USB).
+1. Zainstaluj [Node.js LTS](https://nodejs.org) i aplikację **Expo Go** na telefonie
+   (Google Play).
 2. Odpal backend w katalogu głównym repo: `docker compose up -d --build`.
-3. Uruchom aplikację:
+3. Uruchom serwer deweloperski i zeskanuj QR telefonem:
 
    ```bash
    cd mobile
-   flutter pub get
-   flutter run
+   npm install
+   npx expo start
    ```
 
-   (`local.properties` ze ścieżkami SDK wygeneruje się samo przy pierwszym
-   uruchomieniu.)
+4. **Adres serwera** (ikona ⚙️ w apce, także przed zalogowaniem): telefon z Expo Go
+   łączy się przez Wi-Fi, więc ustaw `http://<IP-komputera>:8080` (IP sprawdzisz
+   `ip addr` / `ipconfig`). Domyślne `http://10.0.2.2:8080` działa tylko w emulatorze.
 
-4. Adres serwera zmienisz w apce: ikona **⚙️** (także na ekranie logowania).
-   - Emulator Androida: `http://10.0.2.2:8080` (ustawiony domyślnie; tak emulator
-     widzi localhost Twojego komputera).
-   - Prawdziwy telefon: komputer i telefon w tej samej sieci Wi-Fi, adres
-     `http://<IP-komputera>:8080` (IP sprawdzisz np. `ip addr` / `ipconfig`).
+> W Expo Go działa wszystko łącznie z lokalnymi alarmami przypomnień; pełną
+> kontrolę nad powiadomieniami (ikona, kanały, dokładność co do minuty) daje
+> development build - patrz niżej.
 
-## Co jest już skonfigurowane w `android/`
+## Build natywny (emulator / APK)
 
-- **Manifest**: uprawnienia `INTERNET`, `POST_NOTIFICATIONS` (Android 13+),
-  `RECEIVE_BOOT_COMPLETED` + `SCHEDULE_EXACT_ALARM` (punktualne alarmy, które
-  przeżywają restart telefonu) oraz odbiorniki `flutter_local_notifications`.
-- **`android:usesCleartextTraffic="true"`** - żeby działał `http://` do backendu
-  w domowej sieci. Przy wystawianiu backendu w internet przejdź na HTTPS i usuń
-  ten atrybut z `app/src/main/AndroidManifest.xml`.
-- **Gradle**: AGP 8.3.2 + Kotlin 1.9.24 + Gradle 8.7 (wrapper w repo),
-  *core library desugaring* wymagany przez `flutter_local_notifications`.
-- **Ikona**: różowe serduszko we wszystkich rozdzielczościach
-  (`res/mipmap-*/ic_launcher.png`).
-- **Release** jest tymczasowo podpisywany kluczem debug, żeby
-  `flutter run --release` działało od ręki - przed publikacją w sklepie
-  skonfiguruj własny klucz (`key.properties`).
+```bash
+npx expo run:android        # wymaga Android Studio (SDK) + JDK 17
+```
 
-iOS: katalogu `ios/` nie ma w repo - w razie potrzeby `flutter create --platforms ios .`
-(ten sam kod Darta zadziała).
+albo w chmurze / lokalnie przez EAS:
+
+```bash
+npx eas build --platform android --profile preview   # APK do udostępnienia
+npx eas build --local ...                            # build lokalny, bez limitów chmury
+```
+
+Bonus Expo: **EAS Update** pozwala wysyłać poprawki JS na telefony bez
+przeinstalowywania APK (`npx eas update`).
 
 ## Powiadomienia
 
-- **Lokalne alarmy** (bez konfiguracji): przypomnienia dzwonią o właściwej porze
-  nawet bez internetu i przy zamkniętej aplikacji - apka planuje je w systemowym
-  AlarmManagerze przy każdej synchronizacji listy przypomnień. Przy pierwszym
-  starcie Android zapyta o zgodę na powiadomienia (13+) i dokładne alarmy (12+).
+- **Lokalne alarmy** (`expo-notifications`): apka przy każdej synchronizacji
+  przypomnień przeplanowuje je w systemie - dzwonią bez internetu i przy
+  zamkniętej aplikacji. Uprawnienia `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`
+  i `RECEIVE_BOOT_COMPLETED` są już zadeklarowane w `app.json`.
 - **Push przez własny serwer ntfy** (opcjonalny): Ustawienia → sekcja
-  „Powiadomienia" pokazuje Twój sekretny temat i adres serwera. Zainstaluj
-  darmową aplikację [ntfy](https://ntfy.sh/) (Google Play/F-Droid), dodaj
-  subskrypcję tego tematu ze swoim serwerem i gotowe - przypomnienia oraz
-  poranne podsumowanie obowiązków przychodzą jako push, nawet na inne urządzenia.
+  „Powiadomienia" pokazuje sekretny temat i adres serwera; instalujesz darmową
+  aplikację [ntfy](https://ntfy.sh/), subskrybujesz temat i push dochodzi nawet
+  przy zabitej apce (obsługa w całości po stronie backendu).
+
+## Konfiguracja natywna (app.json)
+
+- `expo-build-properties` → `usesCleartextTraffic: true` - żeby działał `http://`
+  do backendu w domowej sieci (przy wystawianiu backendu w internet przejdź na
+  HTTPS i usuń tę flagę),
+- `expo-image-picker` (aparat/galeria do zdjęć paragonów i przepisów),
+- ikona + adaptive icon (różowe serduszko) w `assets/`.
 
 ## Struktura
 
 ```
+app/                      # expo-router: plik = ekran
+├── _layout.tsx           # stack, motyw, inicjalizacja Api
+├── login.tsx             # logowanie / rejestracja
+├── (tabs)/               # dolna nawigacja
+│   ├── index.tsx         #   Dziś: przypomnienia, obowiązki, wydarzenia, posiłki
+│   ├── week.tsx          #   Plan tygodnia
+│   ├── kitchen.tsx       #   Kuchnia: Przepisy / Jadłospis / Dzienniczek
+│   ├── budget.tsx        #   Budżet: podsumowanie, limity, transakcje
+│   └── notes.tsx         #   Notatki (siatka 2 kolumny)
+├── task-edit.tsx, reminder-edit.tsx, event-edit.tsx,
+├── meal-edit.tsx, diary-edit.tsx, note-edit.tsx,
+├── recipe/[id].tsx       # szczegóły przepisu (+ plan na jadłospis)
+├── recipe-edit.tsx       # edycja przepisu + zdjęcie
+├── transaction.tsx       # transakcja + ZDJĘCIE PARAGONU 🧾
+├── reminders.tsx, tasks.tsx, settings.tsx, photo.tsx
+components/
+├── ui.tsx                # Card, SectionHeader, EmptyState, Fab, toasty...
+├── forms.tsx             # Input, PickerField, DateField, TimeField, ActionSheet
+└── kitchen/              # trzy zakładki Kuchni
 lib/
-├── main.dart                  # motyw, lokalizacja PL, bramka logowania
-├── api/api_client.dart        # HTTP + JWT + upload zdjęć (singleton Api.i)
-├── models/models.dart         # modele 1:1 z API
-├── util.dart                  # kwoty (grosze), daty, słowniki (posiłki, kategorie)
-├── notifications_service.dart # lokalne alarmy przypomnień
-├── dialogs.dart               # wspólne dialogi dodawania/edycji
-├── widgets/common.dart        # SectionHeader, EmptyState, snackbary
-└── screens/
-    ├── home_shell.dart        # dolna nawigacja: Dziś | Tydzień | Kuchnia | Budżet | Notatki
-    ├── today_screen.dart      # dzisiejsze przypomnienia, obowiązki, wydarzenia, posiłki + szybkie dodawanie
-    ├── week_screen.dart       # plan tygodnia (wydarzenia + obowiązki + jadłospis)
-    ├── kitchen_screen.dart    # zakładki: Przepisy / Jadłospis / Dzienniczek
-    ├── budget_screen.dart     # podsumowanie miesiąca, limity, transakcje
-    ├── transaction_edit_screen.dart  # kwota, kategoria, ZDJĘCIE PARAGONU 🧾
-    ├── notes_screen.dart      # siatka notatek + edycja
-    ├── reminders_screen.dart  # przypomnienia
-    ├── tasks_screen.dart      # wszystkie obowiązki
-    └── settings_screen.dart   # adres serwera, powiadomienia push, wylogowanie
+├── api.ts                # klient HTTP + JWT + upload zdjęć (singleton Api)
+├── models.ts             # typy 1:1 z backendem
+├── util.ts               # grosze, daty (polskie nazwy), słowniki
+├── notifications.ts      # lokalne alarmy przypomnień
+├── stash.ts              # przekazywanie obiektu do ekranu edycji
+└── theme.ts              # kolory
 ```
 
-## Uprawnienia w skrócie
+## Przydatne komendy
 
-| Uprawnienie | Po co |
-|---|---|
-| `INTERNET` | komunikacja z backendem |
-| `POST_NOTIFICATIONS` | pokazywanie powiadomień (Android 13+) |
-| `SCHEDULE_EXACT_ALARM` | przypomnienia dzwonią punktualnie (Android 12+) |
-| `RECEIVE_BOOT_COMPLETED` | alarmy wracają po restarcie telefonu |
-
-Aparat/galeria: `image_picker` używa systemowych intentów - nie wymaga własnych
-wpisów uprawnień.
+```bash
+npm run typecheck          # tsc --noEmit (strict)
+npx expo start -c          # dev server z czystym cache Metro
+npx expo export --platform android   # test pełnego bundla (Metro + Hermes)
+npx expo install --fix     # wyrównanie wersji pakietów do SDK (wymaga internetu)
+```

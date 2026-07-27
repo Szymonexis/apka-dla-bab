@@ -24,7 +24,7 @@ i pomysły na obiad, dzienniczek żywieniowy oraz budżet domowy ze zdjęciami p
 ```mermaid
 flowchart LR
     subgraph Telefon
-        A["📱 Aplikacja mobilna<br/>Flutter (Android-first)<br/>+ lokalne alarmy przypomnień"]
+        A["📱 Aplikacja mobilna<br/>Expo / React Native (TypeScript)<br/>+ lokalne alarmy przypomnień"]
         F["🔔 Aplikacja ntfy<br/>(opcjonalnie, open source)"]
     end
     subgraph "Docker Compose"
@@ -51,6 +51,9 @@ Decyzje projektowe:
 - **Wszystkie tabele mają `user_id`** - izolacja danych na poziomie każdego zapytania.
 - **Powiadomienia bez płatnych usług** - dwa niezależne poziomy (szczegóły niżej):
   lokalne alarmy w telefonie + self-hostowany [ntfy](https://ntfy.sh) w Dockerze.
+- **Mobilka w Expo (React Native + TypeScript)** - rozwój w TS, podgląd w Expo Go
+  bez Android SDK, a poprawki JS można wysyłać OTA przez EAS Update bez
+  przeinstalowywania APK.
 
 ## Struktura repozytorium
 
@@ -67,13 +70,12 @@ Decyzje projektowe:
 │       └── httpapi/          # router chi + handlery per moduł
 │           auth, notes, reminders, events, tasks,
 │           recipes, mealplan, diary, budget, files, push
-└── mobile/                   # Flutter (Dart), Material 3
-    └── lib/
-        ├── api/              # klient HTTP (JWT, upload plików)
-        ├── models/           # modele danych
-        ├── screens/          # Dziś, Tydzień, Kuchnia, Budżet, Notatki, ...
-        ├── notifications_service.dart  # lokalne alarmy przypomnień
-        └── dialogs.dart      # wspólne dialogi dodawania/edycji
+└── mobile/                   # Expo / React Native (TypeScript)
+    ├── app/                  # expo-router: Dziś, Tydzień, Kuchnia, Budżet,
+    │                         # Notatki + ekrany edycji (plik = ekran)
+    ├── components/           # UI, formularze, zakładki Kuchni
+    └── lib/                  # klient API (JWT, upload), typy, daty/grosze,
+                              # lokalne alarmy przypomnień
 ```
 
 ## Model danych
@@ -131,18 +133,18 @@ Backend sam czeka na bazę, wykonuje migracje i zakłada bucket w MinIO.
 
 ### 2. Aplikacja mobilna (Android)
 
-Wymagany [Flutter SDK](https://docs.flutter.dev/get-started/install). Katalog
-`android/` (manifest z uprawnieniami, gradle z desugaringiem, ikony) jest już
-w repo - nic nie trzeba generować ani edytować:
+Wystarczy [Node.js](https://nodejs.org) + aplikacja **Expo Go** na telefonie
+(bez instalowania Android SDK):
 
 ```bash
 cd mobile
-flutter pub get
-flutter run
+npm install
+npx expo start        # zeskanuj QR telefonem z Expo Go
 ```
 
-Szczegóły (co jest skonfigurowane, podpisywanie release, iOS) w
-[`mobile/README.md`](mobile/README.md).
+Telefon łączy się przez Wi-Fi, więc w apce (ikona ⚙️) ustaw adres serwera
+`http://<IP-komputera>:8080`. Build natywny: `npx expo run:android`
+(wymaga Android Studio). Szczegóły i EAS/OTA w [`mobile/README.md`](mobile/README.md).
 
 Adres serwera ustawisz w apce (ikona ⚙️, dostępna też przed zalogowaniem):
 - emulator Androida: `http://10.0.2.2:8080` (domyślny),
@@ -153,8 +155,9 @@ Adres serwera ustawisz w apce (ikona ⚙️, dostępna też przed zalogowaniem):
 Dwa niezależne poziomy; oba za darmo i bez zewnętrznych dostawców:
 
 1. **Lokalne alarmy w telefonie** (zawsze aktywne, zero konfiguracji).
-   Aplikacja przy każdej synchronizacji przypomnień planuje je w systemowym
-   AlarmManagerze - dzwonią punktualnie nawet bez internetu i przy zamkniętej apce.
+   Aplikacja przy każdej synchronizacji przypomnień planuje je w systemie
+   (`expo-notifications`, uprawnienie `SCHEDULE_EXACT_ALARM`) - dzwonią nawet
+   bez internetu i przy zamkniętej apce.
 
 2. **Push przez własny serwer [ntfy](https://ntfy.sh)** (opcjonalny, kontener w compose).
    Backend ma dyspozytor (goroutine, tick co `DISPATCH_INTERVAL_SECONDS`, domyślnie 30 s),
@@ -185,5 +188,7 @@ regeneracja tematu. Wymaga uruchomionego backendu.
 - 🧾 OCR paragonów (automatyczne kwoty i kategorie)
 - 📈 wykresy budżetu i trendów, eksport CSV
 - 📴 tryb offline z synchronizacją
-- 🍎 build na iOS (Flutter - ten sam kod)
+- 🍎 build na iOS (Expo - ten sam kod TypeScript)
+- 📬 OTA: automatyczne poprawki przez EAS Update; Notifee dla twardej
+  punktualności alarmów w development buildzie
 - 🔐 HTTPS + konta ntfy (deploy poza domową siecią)

@@ -1,10 +1,16 @@
-.dart_tool/
-.packages
-build/
-.flutter-plugins
-.flutter-plugins-dependencies
-.metadata
-pubspec.lock
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
 
-# android/ jest wersjonowany w całości (manifest, gradle, ikony).
-# Pliki lokalne (local.properties, .gradle) wyklucza android/.gitignore.
+# katalogi natywne generowane przez prebuild (CNG) - konfiguracja żyje w app.json
+/android/
+/ios/
+
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.env*.local
