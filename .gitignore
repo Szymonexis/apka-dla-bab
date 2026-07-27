@@ -8,13 +8,10 @@
 backend/server
 backend/bin/
 
-# Flutter / Dart
-mobile/.dart_tool/
-mobile/.packages
-mobile/build/
-mobile/.flutter-plugins
-mobile/.flutter-plugins-dependencies
-mobile/pubspec.lock
+# Mobilka (Expo) - szczegóły w mobile/.gitignore
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
 
 # IDE
 .idea/

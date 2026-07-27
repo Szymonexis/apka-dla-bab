@@ -11,11 +11,10 @@ pkgs.mkShell {
     # gopls
     # golangci-lint
 
-    # [mobile: flutter]:
-    # (zawiera darta; Android SDK najprościej mieć z Android Studio
-    #  i ustawić ANDROID_HOME - patrz mobile/README.md)
-    flutter
-    # jdk17
+    # [mobile: expo / react native]:
+    nodejs_24
+    # watchman        # szybszy watch plików dla Metro (opcjonalnie)
+    # jdk17           # potrzebny do `npx expo run:android`
     # android-studio  # unfree - wymaga allowUnfree = true
 
     # [narzędzia]:
