@@ -35,7 +35,8 @@
         {
           "cameraPermission": "Ogarniaczka używa aparatu do zdjęć paragonów i przepisów."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": false
