@@ -12,14 +12,13 @@ pkgs.mkShell {
 
     # [backend: go]:
     go
-    # gopls
-    # golangci-lint
+    gopls
+    golangci-lint
 
     # [mobile: expo / react native + mobile-tauri-svelte: frontend]:
     nodejs_24
-    # watchman        # szybszy watch plików dla Metro (opcjonalnie)
-    # jdk17           # potrzebny do `npx expo run:android`
-    # android-studio  # unfree - wymaga allowUnfree = true
+    watchman        # szybszy watch plików dla Metro (opcjonalnie)
+    jdk17           # potrzebny do `npx expo run:android`
 
     # [mobile-tauri-svelte: rust]:
     rustc
@@ -27,18 +26,16 @@ pkgs.mkShell {
     rustfmt
     clippy
     cargo-tauri      # `cargo tauri dev` - to samo co `npm run tauri dev`
-    # rust-analyzer
+    rust-analyzer
 
     # [mobile-tauri-svelte: narzędzia natywnego builda]:
     pkg-config
     gobject-introspection
 
     # [narzędzia]:
-    curl
     python3          # backend/scripts/smoke.sh
     postgresql       # psql do zaglądania w bazę z docker-compose
     minio-client     # mc do zaglądania w bucket
-    # docker-compose # zwykle systemowy; odkomentuj, jeśli wolisz z nixa
   ];
 
   # [mobile-tauri-svelte: biblioteki systemowe Tauri (desktopowy webview GTK)]:
