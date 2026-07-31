@@ -3,9 +3,8 @@ let
   pkgs = import <nixpkgs> { };
 in
 pkgs.mkShell {
-  # [rust]: nixowy hardening psuje debug-buildy; źródła std dla rust-analyzera
+  # [rust]: nixowy hardening psuje debug-buildy
   hardeningDisable = [ "all" ];
-  RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
 
   packages = with pkgs; [
     zsh
@@ -20,11 +19,10 @@ pkgs.mkShell {
     watchman        # szybszy watch plików dla Metro (opcjonalnie)
     jdk17           # potrzebny do `npx expo run:android`
 
-    # [mobile-tauri-svelte: rust]:
-    rustc
-    cargo
-    rustfmt
-    clippy
+    # [mobile-tauri-svelte: rust]: rustup zamiast nixowego rustc/cargo -
+    # `tauri android init/dev` woła `rustup target add` (targety androidowe);
+    # binarki z rustup działają na NixOS dzięki nix-ld
+    rustup
     cargo-tauri      # `cargo tauri dev` - to samo co `npm run tauri dev`
     rust-analyzer
 
