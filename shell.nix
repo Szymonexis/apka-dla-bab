@@ -1,6 +1,36 @@
 # run with: nix-shell shell.nix
 let
   pkgs = import <nixpkgs> { };
+  # [mobile-tauri-svelte: android]: biblioteki systemowe dla emulatora z Google -
+  # binarki spoza nixa (emulator/qemu) laduja je w runtime przez nix-ld
+  androidEmuLibs = pkgs.lib.makeLibraryPath (
+    with pkgs;
+    [
+      alsa-lib
+      dbus
+      expat
+      fontconfig
+      freetype
+      libglvnd
+      libpulseaudio
+      libxkbcommon
+      nspr
+      nss
+      udev
+      zlib
+      xorg.libX11
+      xorg.libXcomposite
+      xorg.libXcursor
+      xorg.libXdamage
+      xorg.libXext
+      xorg.libXfixes
+      xorg.libXi
+      xorg.libXrandr
+      xorg.libXrender
+      xorg.libXtst
+      xorg.libxcb
+    ]
+  );
 in
 pkgs.mkShell {
   # [rust]: nixowy hardening psuje debug-buildy
@@ -62,7 +92,8 @@ pkgs.mkShell {
     # (binarki z Google dzialaja na NixOS dzieki nix-ld)
     export ANDROID_HOME="$HOME/Android/Sdk"
     export NDK_HOME="$ANDROID_HOME/ndk/29.0.13846066"
-    export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+    export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$PATH"
+    export NIX_LD_LIBRARY_PATH="${androidEmuLibs}:/run/opengl-driver/lib''${NIX_LD_LIBRARY_PATH:+:$NIX_LD_LIBRARY_PATH}"
 
     # [mobile-tauri-svelte]: webview musi widzieć schematy GSettings i moduły TLS
     export XDG_DATA_DIRS="$GSETTINGS_SCHEMAS_PATH:$XDG_DATA_DIRS"
