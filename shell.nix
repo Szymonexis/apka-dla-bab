@@ -111,6 +111,10 @@ pkgs.mkShell {
     export NDK_HOME="$ANDROID_HOME/ndk/29.0.13846066"
     export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$PATH"
     export NIX_LD_LIBRARY_PATH="${androidEmuLibs}/lib:/run/opengl-driver/lib''${NIX_LD_LIBRARY_PATH:+:$NIX_LD_LIBRARY_PATH}"
+    # [emulator]: zbundlowany libxkbcommon szuka keymap w /usr/share/X11/xkb
+    # (nie istnieje na NixOS) - te zmienne wskazuja mu nixowy xkeyboard-config
+    export XKB_CONFIG_ROOT="${pkgs.xkeyboard-config}/share/X11/xkb"
+    export QT_XKB_CONFIG_ROOT="${pkgs.xkeyboard-config}/share/X11/xkb"
 
     # [emulator]: Qt (xcb) w qemu laduje te biblioteki dlopenem, a launcher
     # emulatora nadpisuje LD_LIBRARY_PATH procesu qemu, wiec NIX_LD_LIBRARY_PATH
