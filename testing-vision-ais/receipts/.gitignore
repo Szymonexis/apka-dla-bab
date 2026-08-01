@@ -1,0 +1,3 @@
+# keep the receipts/ directory but not the (personal, EXIF-tagged) images
+*
+!.gitignore
