@@ -24,6 +24,7 @@ pkgs.mkShell {
 
     # [golang]:
     go
+    air # live reload: `air` rebuilds & reruns on save (config: .air.toml)
 
     # [rust]:
     # rustc

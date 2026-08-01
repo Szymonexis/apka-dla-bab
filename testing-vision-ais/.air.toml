@@ -1,0 +1,17 @@
+# Live reload for the receipt extractor.
+# On any .go change: rebuild and re-run against receipt #1.
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/main ."
+  bin = "./tmp/main"
+  # Run non-interactively. Change "1" to another index/filename, or set
+  # args_bin = [] to fall back to the interactive picker.
+  args_bin = ["1"]
+  include_ext = ["go"]
+  exclude_dir = ["tmp", "receipts", ".zshrc.d", ".git"]
+  delay = 500
+
+[misc]
+  clean_on_exit = true

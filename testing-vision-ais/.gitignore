@@ -3,3 +3,6 @@
 
 # compiled binary (matches the module name)
 /testing-vision-ais
+
+# air build output
+/tmp/
