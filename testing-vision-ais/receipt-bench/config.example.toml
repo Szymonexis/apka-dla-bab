@@ -1,0 +1,22 @@
+# receipt-bench configuration.
+# Copy to config.toml to have it picked up automatically:
+#   cp config.example.toml config.toml
+# Every value here can also be overridden on the command line.
+
+url = "http://localhost:11434"   # Ollama server
+report_level = "diagnostic"      # summary | diagnostic | full
+name_threshold = 0.6             # fuzzy product-name match threshold (0..1)
+seed = 42                        # deterministic generation + sampling
+generate = 10                    # how many fresh receipts to make when no --dataset
+timeout = 600.0                  # per-request timeout (seconds); 12B vision is slow
+
+# Models to benchmark. Only gemma4:12b is pulled right now; uncomment the others
+# after `ollama pull <model>`. Any Ollama vision model works here.
+models = [
+  "gemma4:12b",
+  # "qwen2.5vl:7b",
+  # "qwen2.5vl:32b",
+  # "llama3.2-vision:11b",
+  # "minicpm-v",
+  # "llava:13b",
+]
