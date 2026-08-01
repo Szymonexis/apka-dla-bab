@@ -3,9 +3,9 @@
 Benchmark lokalnych modeli vision (przez [Ollama](https://ollama.com)) na
 syntetycznych polskich paragonach. Narzędzie:
 
-1. **generuje** X paragonów (reużywa generatora z `../paragony_pl_czesc1`),
+1. **generuje** X paragonów (wbudowany generator w `generator/`),
 2. **wysyła** każdy obraz do modelu na Twojej maszynie (`localhost:11434`),
-   prosząc o wynik w formacie z `../return-schema.json`,
+   prosząc o wynik w formacie z `return-schema.json`,
 3. **porównuje** odpowiedź z ground truth i **zapisuje raport** JSON (+ Markdown).
 
 Schemat wyniku jest zdefiniowany raz, w **Pydantic** (pythonowy odpowiednik
@@ -32,10 +32,14 @@ python -m receipt_bench --help              # wszystkie flagi
 Domyślnie testuje modele z `config.toml` (skopiuj z `config.example.toml`),
 a bez pliku — `gemma4:12b`. Raporty lądują w `reports/`.
 
-### Zamiast generować — użyj gotowych 300
+### Zamiast generować — użyj gotowego datasetu
+
+Generator zapisuje dataset (`images/`, `ground_truth/`, `index.jsonl`) do
+`work/`. Możesz też wskazać dowolny wygenerowany wcześniej katalog:
 
 ```sh
-python run.py --dataset ../paragony_pl_czesc1/dataset,../paragony_pl_czesc2/dataset,../paragony_pl_czesc3/dataset --sample 30
+python generator/generate.py --n 300 --out moj_zbior --seed 123   # jednorazowo
+python run.py --dataset moj_zbior --sample 30                      # testuj podzbiór
 ```
 
 ## Najważniejsze flagi
@@ -96,6 +100,8 @@ receipt_bench/
   aggregate.py  agregacja per model + rozbicia + percentyle
   report.py     złożenie raportu (3 poziomy) + Markdown
   cli.py        orkiestracja
+generator/      wbudowany generator paragonów (+ tools/, README z formatem)
+return-schema.json  referencyjny format wyniku (źródłem prawdy jest schema.py)
 run.py          skrót: python run.py ...
 config.example.toml
 ```

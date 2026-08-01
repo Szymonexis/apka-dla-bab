@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Receipt extraction result",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "products": {
+      "type": "array",
+      "description": "List of line items read from the document, in order of appearance",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Product name exactly as it appears on the document",
+            "minLength": 1
+          },
+          "value": {
+            "type": "integer",
+            "description": "Line item price as an integer in the currency's minor unit, e.g. 5.00 PLN = 500, $4.99 = 499. Never use decimal numbers.",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency in ISO 4217 format, e.g. PLN, EUR, USD",
+            "pattern": "^[A-Z]{3}$"
+          }
+        },
+        "required": ["name", "value", "currency"]
+      }
+    },
+    "total": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Grand total as read from the document (not computed from the line items)",
+      "properties": {
+        "value": {
+          "type": "integer",
+          "description": "Grand total as an integer in the currency's minor unit, e.g. 123.45 PLN = 12345",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      },
+      "required": ["value", "currency"]
+    }
+  },
+  "required": ["products", "total"]
+}

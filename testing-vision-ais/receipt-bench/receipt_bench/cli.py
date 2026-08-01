@@ -19,8 +19,6 @@ from .schema import ollama_format
 
 # receipt-bench/ (the project root: parent of this package)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-# testing-vision-ais/ (holds the paragony_pl_czesc* generators)
-WORKSPACE_ROOT = PROJECT_ROOT.parent
 
 DEFAULTS = {
     "url": "http://localhost:11434",
@@ -30,7 +28,7 @@ DEFAULTS = {
     "seed": 42,
     "generate": 10,
     "timeout": 600.0,
-    "generator_dir": str(WORKSPACE_ROOT / "paragony_pl_czesc1" / "generator"),
+    "generator_dir": str(PROJECT_ROOT / "generator"),
 }
 
 
