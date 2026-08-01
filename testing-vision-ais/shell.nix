@@ -35,7 +35,7 @@ pkgs.mkShell {
     mkdir -p "$ZDOTDIR"
     cat > "$ZDOTDIR/.zshrc" <<'EOF'
       [[ -f ~/.zshrc ]] && source ~/.zshrc
-      PROMPT="%F{white}(nix-shell:receipt-bench)%f $PROMPT"
+      PROMPT="%F{white}(nix-shell)%f $PROMPT"
 EOF
     exec ${pkgs.zsh}/bin/zsh
   '';
